@@ -145,34 +145,34 @@ export default function PondPage() {
                     ))}
                   </div>
                   
-                  {/* Fish */}
-                  {gamification.fish === 0 ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-white/80">
-                        <Waves className="w-16 h-16 mx-auto mb-4 animate-float" />
-                        <p className="text-lg font-medium">Empty Pond</p>
-                        <p className="text-sm">Complete pomodoros to add fish!</p>
-                      </div>
-                    </div>
-                  ) : (
-                    fishPositions.map((fish) => (
-                      <div
-                        key={fish.id}
-                        className="absolute transition-all duration-1000 animate-fish-swim cursor-pointer hover:scale-110"
-                        style={{
-                          left: fish.left,
-                          top: fish.top,
-                          animationDelay: `${fish.delay}s`,
-                          transform: `scale(${fish.size})`,
-                        }}
-                        title={`Fish ${fish.id + 1}`}
-                      >
-                        <div className={`text-2xl ${feeding ? 'animate-grow' : ''}`}>
-                          {fishEmojis[fish.type]}
-                        </div>
-                      </div>
-                    ))
-                  )}
+                   {/* Fish */}
+                   {gamification.fish === 0 ? (
+                     <div className="absolute inset-0 flex items-center justify-center">
+                       <div className="text-center text-white/80">
+                         <Waves className="w-16 h-16 mx-auto mb-4 animate-float" />
+                         <p className="text-lg font-medium">Empty Pond</p>
+                         <p className="text-sm">Complete pomodoros to add fish!</p>
+                       </div>
+                     </div>
+                   ) : (
+                     fishPositions.map((fish) => (
+                       <div
+                         key={fish.id}
+                         className="absolute transition-all duration-1000 animate-fish-swim cursor-pointer hover:scale-110"
+                         style={{
+                           left: fish.left,
+                           top: fish.top,
+                           animationDelay: `${fish.delay}s`,
+                           transform: `scale(${fish.size})`,
+                         }}
+                         title={`Fish ${fish.id + 1}`}
+                       >
+                         <div className={`text-2xl ${feeding ? 'animate-grow' : ''}`}>
+                           {fishEmojis[fish.type]}
+                         </div>
+                       </div>
+                     ))
+                   )}
                   
                   {/* Bubbles */}
                   <div className="absolute inset-0 overflow-hidden rounded-lg">
@@ -286,44 +286,6 @@ export default function PondPage() {
                     Complete pomodoro sessions to add fish to your pond!
                   </p>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Achievements */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Pond Achievements</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.fish >= 1 ? 'bg-pond-blue/10 text-pond-blue' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🐠</div>
-                    <div className="text-xs">First Fish</div>
-                  </div>
-                  
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.fish >= 10 ? 'bg-pond-blue/10 text-pond-blue' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🌊</div>
-                    <div className="text-xs">School of Fish</div>
-                  </div>
-                  
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.fish >= 30 ? 'bg-pond-blue/10 text-pond-blue' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🏝️</div>
-                    <div className="text-xs">Fish Master</div>
-                  </div>
-                  
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.fish >= 60 ? 'bg-pond-blue/10 text-pond-blue' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">👑</div>
-                    <div className="text-xs">Ocean Ruler</div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

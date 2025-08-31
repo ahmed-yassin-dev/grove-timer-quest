@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface TimerSettings {
   focusTime: number;
@@ -30,6 +31,8 @@ interface Statistics {
 
 export default function PomodoroPage() {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [selectedTask, setSelectedTask] = useState<any>(null);
   const [settings, setSettings] = useState<TimerSettings>({
     focusTime: 25,
     shortBreak: 5,
@@ -52,7 +55,7 @@ export default function PomodoroPage() {
     monthlySessions: {},
   });
 
-  // Load settings and statistics from localStorage
+  // Load settings, statistics, and selected task from localStorage
   useEffect(() => {
     const savedSettings = localStorage.getItem("timer-settings");
     if (savedSettings) {
@@ -72,6 +75,15 @@ export default function PomodoroPage() {
     const savedTimer = localStorage.getItem("timer-state");
     if (savedTimer) {
       setTimer(JSON.parse(savedTimer));
+    }
+
+    // Load selected task and clear from storage
+    const savedSelectedTask = localStorage.getItem("selectedTask");
+    if (savedSelectedTask) {
+      const task = JSON.parse(savedSelectedTask);
+      setSelectedTask(task);
+      setTimer(prev => ({ ...prev, currentTask: task.title }));
+      localStorage.removeItem("selectedTask");
     }
   }, []);
 
@@ -146,9 +158,25 @@ export default function PomodoroPage() {
       gamification.fish += 1;
       localStorage.setItem("gamification", JSON.stringify(gamification));
       
+      // Update selected task pomodoro count
+      if (selectedTask) {
+        const savedTasks = localStorage.getItem("tasks");
+        if (savedTasks) {
+          const tasks = JSON.parse(savedTasks);
+          const updatedTasks = tasks.map((task: any) =>
+            task.id === selectedTask.id
+              ? { ...task, pomodoroCount: task.pomodoroCount + 1, timeSpent: task.timeSpent + settings.focusTime }
+              : task
+          );
+          localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        }
+      }
+      
       toast({
         title: "Focus session completed! 🎣",
-        description: "A new fish has been added to your pond!",
+        description: selectedTask 
+          ? `Great work on "${selectedTask.title}"! A new fish has been added to your pond!`
+          : "A new fish has been added to your pond!",
       });
     } else {
       newStatistics.totalBreakTime += timer.mode === "shortBreak" ? settings.shortBreak : settings.longBreak;
@@ -192,7 +220,7 @@ export default function PomodoroPage() {
       cycle: nextCycle,
       currentTask: timer.currentTask,
     });
-  }, [timer, settings, statistics, toast]);
+  }, [timer, settings, statistics, selectedTask, toast]);
 
   const toggleTimer = () => {
     setTimer(prev => ({ ...prev, isRunning: !prev.isRunning }));
@@ -266,9 +294,25 @@ export default function PomodoroPage() {
               {getModeTitle()} - Cycle {timer.cycle}
             </CardTitle>
             {timer.currentTask && (
-              <p className="text-sm opacity-90">
-                Working on: {timer.currentTask}
-              </p>
+              <div className="mt-2 p-3 bg-background/50 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Working on:</p>
+                <p className="font-medium">{timer.currentTask}</p>
+                {selectedTask && (
+                  <div className="flex gap-2 mt-2 justify-center">
+                    <span className="text-xs bg-secondary px-2 py-1 rounded">
+                      🍅 {selectedTask.pomodoroCount || 0} cycles
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/tasks")}
+                      className="text-xs h-6"
+                    >
+                      Back to Tasks
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </CardHeader>
           <CardContent className="text-center space-y-6">

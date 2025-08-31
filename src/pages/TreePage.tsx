@@ -243,43 +243,6 @@ export default function TreePage() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Achievement Badges</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.leaves >= 1 ? 'bg-accent/10 text-accent' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🌱</div>
-                    <div className="text-xs">First Sprout</div>
-                  </div>
-                  
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.leaves >= 10 ? 'bg-accent/10 text-accent' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🌿</div>
-                    <div className="text-xs">Growing Strong</div>
-                  </div>
-                  
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.leaves >= 25 ? 'bg-accent/10 text-accent' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🌳</div>
-                    <div className="text-xs">Tree Master</div>
-                  </div>
-                  
-                  <div className={`p-3 rounded-lg text-center ${
-                    gamification.leaves >= 50 ? 'bg-accent/10 text-accent' : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <div className="text-2xl mb-1">🏆</div>
-                    <div className="text-xs">Productivity Legend</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

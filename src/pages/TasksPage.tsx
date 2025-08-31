@@ -14,14 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { TaskTimer } from "@/components/TaskTimer";
+import { useNavigate } from "react-router-dom";
 
 interface Task {
   id: string;
@@ -50,15 +44,15 @@ interface Folder {
 
 export default function TasksPage() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [newTask, setNewTask] = useState("");
   const [newProject, setNewProject] = useState("");
   const [newFolder, setNewFolder] = useState("");
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [timerDialogOpen, setTimerDialogOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
 
   // Load data from localStorage
   useEffect(() => {
@@ -151,20 +145,9 @@ export default function TasksPage() {
   };
 
   const startTimer = (task: Task) => {
-    setSelectedTask(task);
-    setTimerDialogOpen(true);
-  };
-
-  const onTimerComplete = (pomodoroCount: number, timeSpent: number) => {
-    if (selectedTask) {
-      setTasks(tasks.map(task => 
-        task.id === selectedTask.id 
-          ? { ...task, pomodoroCount, timeSpent }
-          : task
-      ));
-    }
-    setTimerDialogOpen(false);
-    setSelectedTask(null);
+    // Store selected task and navigate to pomodoro page
+    localStorage.setItem("selectedTask", JSON.stringify(task));
+    navigate("/");
   };
 
   const moveTaskToProject = (taskId: string, projectId: string) => {
@@ -189,6 +172,33 @@ export default function TasksPage() {
     setFolders(folders.map(folder =>
       folder.id === folderId ? { ...folder, expanded: !folder.expanded } : folder
     ));
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, task: Task) => {
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropOnProject = (e: React.DragEvent, projectId: string) => {
+    e.preventDefault();
+    if (draggedTask) {
+      moveTaskToProject(draggedTask.id, projectId);
+      setDraggedTask(null);
+    }
+  };
+
+  const handleDropOnFolder = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    if (draggedTask) {
+      moveTaskToFolder(draggedTask.id, folderId);
+      setDraggedTask(null);
+    }
   };
 
   const getTasksByCategory = () => {
@@ -221,7 +231,11 @@ export default function TasksPage() {
   const { orphanTasks, projectTasks, folderTasks, completedTasks } = getTasksByCategory();
 
   const TaskItem = ({ task, isNested = false }: { task: Task; isNested?: boolean }) => (
-    <Card className={`${isNested ? 'ml-6 border-l-4 border-l-muted' : ''} transition-smooth hover:shadow-md`}>
+    <Card 
+      className={`${isNested ? 'ml-6 border-l-4 border-l-muted' : ''} transition-smooth hover:shadow-md cursor-move`}
+      draggable={!task.completed}
+      onDragStart={(e) => handleDragStart(e, task)}
+    >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
@@ -362,7 +376,11 @@ export default function TasksPage() {
         {/* Project tasks */}
         {projectTasks.map(({ project, tasks: projectTasksList }) => (
           <div key={project.id} className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div 
+              className="flex items-center gap-2 p-2 rounded border-2 border-dashed border-transparent hover:border-muted transition-colors"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDropOnProject(e, project.id)}
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -377,6 +395,7 @@ export default function TasksPage() {
               <h2 className="text-xl font-semibold" style={{ color: project.color }}>
                 {project.name} ({projectTasksList.length})
               </h2>
+              <span className="text-xs text-muted-foreground ml-auto">Drop tasks here</span>
             </div>
             {project.expanded && projectTasksList.map(task => (
               <TaskItem key={task.id} task={task} isNested />
@@ -387,7 +406,11 @@ export default function TasksPage() {
         {/* Folder tasks */}
         {folderTasks.map(({ folder, tasks: folderTasksList }) => (
           <div key={folder.id} className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div 
+              className="flex items-center gap-2 p-2 rounded border-2 border-dashed border-transparent hover:border-muted transition-colors"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDropOnFolder(e, folder.id)}
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -402,6 +425,7 @@ export default function TasksPage() {
               <h2 className="text-xl font-semibold text-muted-foreground">
                 📁 {folder.name} ({folderTasksList.length})
               </h2>
+              <span className="text-xs text-muted-foreground ml-auto">Drop tasks here</span>
             </div>
             {folder.expanded && folderTasksList.map(task => (
               <TaskItem key={task.id} task={task} isNested />
@@ -421,21 +445,6 @@ export default function TasksPage() {
           </div>
         )}
 
-        {/* Task Timer Dialog */}
-        <Dialog open={timerDialogOpen} onOpenChange={setTimerDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Focus Timer</DialogTitle>
-            </DialogHeader>
-            {selectedTask && (
-              <TaskTimer
-                task={selectedTask}
-                onComplete={onTimerComplete}
-                onClose={() => setTimerDialogOpen(false)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

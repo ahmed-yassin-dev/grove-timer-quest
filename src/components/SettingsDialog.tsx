@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Upload, Timer, Database } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Download, Upload, Timer, Sun, Moon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -26,6 +28,7 @@ interface TimerSettings {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [timerSettings, setTimerSettings] = useState<TimerSettings>({
     focusTime: 25,
     shortBreak: 5,
@@ -241,6 +244,37 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     Import Data
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Appearance</CardTitle>
+              <CardDescription>
+                Choose your preferred theme
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Button
+                  variant={theme === "light" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("light")}
+                  className="flex-1"
+                >
+                  <Sun className="h-4 w-4 mr-2" />
+                  Light
+                </Button>
+                <Button
+                  variant={theme === "dark" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("dark")}
+                  className="flex-1"
+                >
+                  <Moon className="h-4 w-4 mr-2" />
+                  Dark
+                </Button>
               </div>
             </CardContent>
           </Card>
