@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -51,6 +52,21 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				// Timer colors
+				focus: 'hsl(var(--focus-color))',
+				break: 'hsl(var(--break-color))',
+				pause: 'hsl(var(--pause-color))',
+				// Gamification colors
+				tree: {
+					brown: 'hsl(var(--tree-brown))',
+					green: 'hsl(var(--tree-green))'
+				},
+				pond: {
+					blue: 'hsl(var(--pond-blue))'
+				},
+				fish: {
+					orange: 'hsl(var(--fish-orange))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
