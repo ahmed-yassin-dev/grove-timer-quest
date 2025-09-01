@@ -34,6 +34,7 @@ interface Project {
   name: string;
   color: string;
   expanded: boolean;
+  folderId?: string;
 }
 
 interface Folder {
@@ -53,6 +54,7 @@ export default function TasksPage() {
   const [newFolder, setNewFolder] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [draggedProject, setDraggedProject] = useState<Project | null>(null);
 
   // Load data from localStorage
   useEffect(() => {
@@ -162,6 +164,12 @@ export default function TasksPage() {
     ));
   };
 
+  const moveProjectToFolder = (projectId: string, folderId: string) => {
+    setProjects(projects.map(project => 
+      project.id === projectId ? { ...project, folderId } : project
+    ));
+  };
+
   const toggleProjectExpanded = (projectId: string) => {
     setProjects(projects.map(project =>
       project.id === projectId ? { ...project, expanded: !project.expanded } : project
@@ -177,6 +185,11 @@ export default function TasksPage() {
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, task: Task) => {
     setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleProjectDragStart = (e: React.DragEvent, project: Project) => {
+    setDraggedProject(project);
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -199,15 +212,25 @@ export default function TasksPage() {
       moveTaskToFolder(draggedTask.id, folderId);
       setDraggedTask(null);
     }
+    if (draggedProject) {
+      moveProjectToFolder(draggedProject.id, folderId);
+      setDraggedProject(null);
+    }
   };
 
   const getTasksByCategory = () => {
     const activeTasks = tasks.filter(task => !task.completed);
     const completedTasks = tasks.filter(task => task.completed);
     
+    const orphanProjects = projects.filter(project => !project.folderId);
+    const folderProjects = folders.map(folder => ({
+      folder,
+      projects: projects.filter(project => project.folderId === folder.id)
+    }));
+    
     return {
       orphanTasks: activeTasks.filter(task => !task.projectId && !task.folderId),
-      projectTasks: projects.map(project => ({
+      projectTasks: orphanProjects.map(project => ({
         project,
         tasks: activeTasks.filter(task => task.projectId === project.id)
       })),
@@ -215,6 +238,7 @@ export default function TasksPage() {
         folder,
         tasks: activeTasks.filter(task => task.folderId === folder.id)
       })),
+      folderProjects,
       completedTasks
     };
   };
@@ -228,7 +252,7 @@ export default function TasksPage() {
     return `${hours}h ${mins}m`;
   };
 
-  const { orphanTasks, projectTasks, folderTasks, completedTasks } = getTasksByCategory();
+  const { orphanTasks, projectTasks, folderTasks, folderProjects, completedTasks } = getTasksByCategory();
 
   const TaskItem = ({ task, isNested = false }: { task: Task; isNested?: boolean }) => (
     <Card 
@@ -377,7 +401,9 @@ export default function TasksPage() {
         {projectTasks.map(({ project, tasks: projectTasksList }) => (
           <div key={project.id} className="space-y-3">
             <div 
-              className="flex items-center gap-2 p-2 rounded border-2 border-dashed border-transparent hover:border-muted transition-colors"
+              className="flex items-center gap-2 p-2 rounded border-2 border-dashed border-transparent hover:border-muted transition-colors cursor-move"
+              draggable
+              onDragStart={(e) => handleProjectDragStart(e, project)}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDropOnProject(e, project.id)}
             >
@@ -423,13 +449,49 @@ export default function TasksPage() {
                 )}
               </Button>
               <h2 className="text-xl font-semibold text-muted-foreground">
-                📁 {folder.name} ({folderTasksList.length})
+                📁 {folder.name} ({folderTasksList.length + (folderProjects.find(fp => fp.folder.id === folder.id)?.projects.length || 0)})
               </h2>
-              <span className="text-xs text-muted-foreground ml-auto">Drop tasks here</span>
+              <span className="text-xs text-muted-foreground ml-auto">Drop tasks & projects here</span>
             </div>
-            {folder.expanded && folderTasksList.map(task => (
-              <TaskItem key={task.id} task={task} isNested />
-            ))}
+            {folder.expanded && (
+              <>
+                {/* Projects within this folder */}
+                {folderProjects.find(fp => fp.folder.id === folder.id)?.projects.map(project => (
+                  <div key={project.id} className="ml-6 space-y-3">
+                    <div 
+                      className="flex items-center gap-2 p-2 rounded border-2 border-dashed border-transparent hover:border-muted transition-colors cursor-move"
+                      draggable
+                      onDragStart={(e) => handleProjectDragStart(e, project)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDropOnProject(e, project.id)}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleProjectExpanded(project.id)}
+                      >
+                        {project.expanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <h3 className="text-lg font-medium" style={{ color: project.color }}>
+                        {project.name} ({tasks.filter(task => task.projectId === project.id && !task.completed).length})
+                      </h3>
+                      <span className="text-xs text-muted-foreground ml-auto">Drop tasks here</span>
+                    </div>
+                    {project.expanded && tasks.filter(task => task.projectId === project.id && !task.completed).map(task => (
+                      <TaskItem key={task.id} task={task} isNested />
+                    ))}
+                  </div>
+                ))}
+                {/* Direct tasks in this folder */}
+                {folderTasksList.map(task => (
+                  <TaskItem key={task.id} task={task} isNested />
+                ))}
+              </>
+            )}
           </div>
         ))}
 
