@@ -19,6 +19,19 @@ interface TimerState {
   isRunning: boolean;
   cycle: number;
   currentTask?: string;
+  sessionStartTime?: string;
+}
+
+interface TaskBlock {
+  id: string;
+  taskName: string;
+  projectName?: string;
+  folderName?: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  type: 'focus' | 'break';
+  completed: boolean;
 }
 
 interface Statistics {
@@ -27,6 +40,7 @@ interface Statistics {
   totalBreakTime: number;
   dailySessions: Record<string, number>;
   monthlySessions: Record<string, number>;
+  taskBlocks?: Record<string, TaskBlock[]>; // date -> array of task blocks
 }
 
 export default function PomodoroPage() {
@@ -144,8 +158,52 @@ export default function PomodoroPage() {
   const handleTimerComplete = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
     const thisMonth = today.slice(0, 7);
+    const now = new Date().toISOString();
 
     let newStatistics = { ...statistics };
+    
+    // Ensure taskBlocks exists
+    if (!newStatistics.taskBlocks) {
+      newStatistics.taskBlocks = {};
+    }
+    if (!newStatistics.taskBlocks[today]) {
+      newStatistics.taskBlocks[today] = [];
+    }
+    
+    // Log task block with time details
+    if (timer.sessionStartTime) {
+      const startTime = new Date(timer.sessionStartTime);
+      const endTime = new Date(now);
+      const duration = (endTime.getTime() - startTime.getTime()) / 60000; // minutes
+      
+      // Get task project/folder info
+      let projectName, folderName;
+      if (selectedTask) {
+        const savedTasks = localStorage.getItem("tasks");
+        if (savedTasks) {
+          const tasks = JSON.parse(savedTasks);
+          const task = tasks.find((t: any) => t.id === selectedTask.id);
+          if (task) {
+            projectName = task.project;
+            folderName = task.folder;
+          }
+        }
+      }
+      
+      const taskBlock = {
+        id: `${now}-${Math.random()}`,
+        taskName: timer.currentTask || 'Untitled Session',
+        projectName,
+        folderName,
+        startTime: timer.sessionStartTime,
+        endTime: now,
+        duration,
+        type: timer.mode as 'focus' | 'break',
+        completed: timer.mode === 'focus'
+      };
+      
+      newStatistics.taskBlocks[today].push(taskBlock);
+    }
     
     if (timer.mode === "focus") {
       newStatistics.totalSessions += 1;
@@ -219,11 +277,21 @@ export default function PomodoroPage() {
       isRunning: false,
       cycle: nextCycle,
       currentTask: timer.currentTask,
+      sessionStartTime: undefined,
     });
   }, [timer, settings, statistics, selectedTask, toast]);
 
   const toggleTimer = () => {
-    setTimer(prev => ({ ...prev, isRunning: !prev.isRunning }));
+    setTimer(prev => {
+      const newIsRunning = !prev.isRunning;
+      const now = new Date().toISOString();
+      
+      return {
+        ...prev,
+        isRunning: newIsRunning,
+        sessionStartTime: newIsRunning && !prev.sessionStartTime ? now : prev.sessionStartTime,
+      };
+    });
   };
 
   const resetTimer = () => {
@@ -237,6 +305,7 @@ export default function PomodoroPage() {
       ...prev,
       timeLeft,
       isRunning: false,
+      sessionStartTime: undefined,
     }));
     localStorage.removeItem("timer-state");
   };
