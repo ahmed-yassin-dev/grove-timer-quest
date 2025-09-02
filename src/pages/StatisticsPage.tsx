@@ -196,11 +196,12 @@ export default function StatisticsPage() {
     return statistics.taskBlocks[date] || [];
   };
 
+  // --- START: Updated Timeline Graph for Each Day ---
   const renderDayDetail = (date: string) => {
     const blocks = getDayBlocks(date);
     const uniqueTasks = Array.from(new Set(blocks.map(block => block.taskName)));
-    const maxTaskNameLength = Math.max(...uniqueTasks.map(name => name.length), 10);
-    
+    // const maxTaskNameLength = Math.max(...uniqueTasks.map(name => name.length), 10);
+
     return (
       <Card className="shadow-card">
         <CardHeader>
@@ -221,56 +222,95 @@ export default function StatisticsPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Timeline Graph */}
-            <div className="relative bg-muted/30 rounded-lg p-6 overflow-x-auto">
+            <div className="relative bg-muted/30 rounded-lg p-6 overflow-x-auto" style={{ minHeight: 600 }}>
               <div className="flex gap-4">
                 {/* Y-axis (Hours) */}
-                <div className="flex flex-col justify-between py-2" style={{ height: '960px' }}>
-                  {Array.from({ length: 49 }, (_, i) => (
-                    <div key={i} className="text-xs text-muted-foreground font-mono min-h-[19px] flex items-center">
-                      {i < 48 ? `${Math.floor(i / 2).toString().padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}` : ''}
+                <div className="flex flex-col justify-between py-2" style={{ height: 480 }}>
+                  {Array.from({ length: 25 }, (_, i) => (
+                    <div key={i} className="text-xs text-muted-foreground font-mono min-h-[19px] flex items-center" style={{ height: 19.2 }}>
+                      {i.toString().padStart(2, '0')}:00
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Graph Area */}
-                <div className="flex-1 relative border-l border-border/50" style={{ height: '960px', minWidth: `${uniqueTasks.length * 180}px` }}>
-                  {/* Hour grid lines */}
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <div 
-                      key={`hour-${i}`} 
-                      className="absolute w-full border-t border-border/50" 
-                      style={{ top: `${(i / 24) * 100}%` }}
+                <div
+                  className="relative border-l border-border/50"
+                  style={{ height: 480, minWidth: `${uniqueTasks.length * 120}px` }}
+                >
+                  {/* Vertical task columns */}
+                  {uniqueTasks.map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute h-full border-l border-border/30"
+                      style={{
+                        left: `${(i / uniqueTasks.length) * 100}%`,
+                        width: 0,
+                      }}
                     />
                   ))}
-                  
-                  {/* Half-hour grid lines */}
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <div 
-                      key={`half-${i}`} 
-                      className="absolute w-full border-t border-border/20" 
-                      style={{ top: `${((i + 0.5) / 24) * 100}%` }}
+
+                  {/* Horizontal hour grid lines */}
+                  {Array.from({ length: 25 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-full border-t border-border/20"
+                      style={{
+                        top: `${(i / 24) * 100}%`,
+                        left: 0,
+                        right: 0,
+                      }}
                     />
                   ))}
-                  
-                  {/* Task column dividers */}
-                  {Array.from({ length: uniqueTasks.length + 1 }, (_, i) => (
-                    <div 
-                      key={i} 
-                      className="absolute h-full border-l border-border/50" 
-                      style={{ left: `${(i / uniqueTasks.length) * 100}%` }}
-                    />
-                  ))}
-                  
+
+                  {/* Task blocks */}
+                  {uniqueTasks.map((taskName, taskIdx) => {
+                    const taskBlocks = blocks.filter((b) => b.taskName === taskName);
+                    const left = (taskIdx / uniqueTasks.length) * 100;
+                    const width = 100 / uniqueTasks.length;
+
+                    return taskBlocks.map((block) => {
+                      const start = new Date(block.startTime);
+                      const end = new Date(block.endTime);
+                      const startHour = start.getHours() + start.getMinutes() / 60;
+                      const endHour = end.getHours() + end.getMinutes() / 60;
+                      const topPercent = (startHour / 24) * 100;
+                      const bottomPercent = (endHour / 24) * 100;
+                      const blockHeight = Math.max(bottomPercent - topPercent, 2); // at least 2%
+
+                      return (
+                        <div
+                          key={block.id}
+                          className={`absolute flex items-center justify-center font-semibold text-xs rounded shadow-sm border border-current/40 ${getProjectColor(block.projectName, block.folderName)}`}
+                          style={{
+                            left: `${left}%`,
+                            width: `${width}%`,
+                            top: `${topPercent}%`,
+                            height: `${blockHeight}%`,
+                            minHeight: 18,
+                            padding: 2,
+                            transition: 'box-shadow 0.2s',
+                            zIndex: 2,
+                            textAlign: 'center'
+                          }}
+                          title={`${block.taskName}\n${start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} - ${end.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`}
+                        >
+                          <span style={{ width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {block.taskName}
+                          </span>
+                        </div>
+                      );
+                    });
+                  })}
+
                   {/* X-axis task labels */}
-                  <div className="absolute -bottom-10 w-full flex">
-                    {uniqueTasks.map((taskName, taskIndex) => (
-                      <div 
-                        key={taskName} 
+                  <div className="absolute left-0 right-0 -bottom-10 flex" style={{ height: 28 }}>
+                    {uniqueTasks.map((taskName, i) => (
+                      <div
+                        key={taskName}
                         className="text-xs font-medium text-center px-2 truncate"
-                        style={{ 
-                          width: `${100 / uniqueTasks.length}%`,
-                          marginLeft: `${(taskIndex / uniqueTasks.length) * 100}%`,
-                          position: 'absolute'
+                        style={{
+                          width: `${100 / uniqueTasks.length}%`
                         }}
                         title={taskName}
                       >
@@ -278,55 +318,11 @@ export default function StatisticsPage() {
                       </div>
                     ))}
                   </div>
-                  
-                  {/* Task time blocks */}
-                  {uniqueTasks.map((taskName, taskIndex) => {
-                    const taskBlocks = blocks.filter(block => block.taskName === taskName);
-                    const columnLeft = (taskIndex / uniqueTasks.length) * 100;
-                    const columnWidth = 100 / uniqueTasks.length;
-                    
-                    return taskBlocks.map(block => {
-                      const startHour = new Date(block.startTime).getHours();
-                      const startMinute = new Date(block.startTime).getMinutes();
-                      const endHour = new Date(block.endTime).getHours();
-                      const endMinute = new Date(block.endTime).getMinutes();
-                      
-                      const startPercent = ((startHour + startMinute / 60) / 24) * 100;
-                      const endPercent = ((endHour + endMinute / 60) / 24) * 100;
-                      const height = Math.max(endPercent - startPercent, 1.5); // Minimum height for visibility
-                      
-                      return (
-                        <div
-                          key={`${taskName}-${block.id}`}
-                          className={`absolute rounded-sm ${getProjectColor(block.projectName, block.folderName)} 
-                            border border-current/30 flex flex-col items-center justify-center text-xs font-medium
-                            shadow-sm`}
-                          style={{
-                            left: `${columnLeft + 1}%`, // Small margin from column edge
-                            width: `${columnWidth - 2}%`, // Small margin on both sides
-                            top: `${startPercent}%`,
-                            height: `${height}%`,
-                            minHeight: '24px'
-                          }}
-                          title={`${block.taskName}\n${new Date(block.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(block.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}\nDuration: ${Math.round(block.duration)} minutes`}
-                        >
-                          <div className="text-center p-1 leading-tight">
-                            <div className="font-semibold truncate text-xs" style={{ maxWidth: '100px' }}>
-                              {block.taskName}
-                            </div>
-                            <div className="text-xs opacity-90 mt-0.5">
-                              {Math.round(block.duration)}m
-                            </div>
-                            {block.type === 'focus' && <div className="text-xs">🍅</div>}
-                          </div>
-                        </div>
-                      );
-                    });
-                  })}
                 </div>
               </div>
             </div>
-            
+            {/* End Timeline Graph */}
+
             {/* Legend */}
             {uniqueTasks.length > 0 && (
               <div className="space-y-2">
@@ -352,6 +348,7 @@ export default function StatisticsPage() {
       </Card>
     );
   };
+  // --- END: Updated Timeline Graph for Each Day ---
 
   const todayStats = getTodayStats();
   const monthStats = getCurrentMonthStats();
