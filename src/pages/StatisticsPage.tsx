@@ -221,19 +221,19 @@ export default function StatisticsPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Timeline Graph */}
-            <div className="relative bg-muted/30 rounded-lg p-4 overflow-x-auto">
+            <div className="relative bg-muted/30 rounded-lg p-6 overflow-x-auto">
               <div className="flex gap-4">
                 {/* Y-axis (Hours) */}
                 <div className="flex flex-col justify-between py-2" style={{ height: '480px' }}>
                   {Array.from({ length: 25 }, (_, i) => (
-                    <div key={i} className="text-xs text-muted-foreground font-mono min-h-[18px] flex items-center">
+                    <div key={i} className="text-xs text-muted-foreground font-mono min-h-[19px] flex items-center">
                       {i < 24 ? `${i.toString().padStart(2, '0')}:00` : ''}
                     </div>
                   ))}
                 </div>
                 
                 {/* Graph Area */}
-                <div className="flex-1 relative" style={{ height: '480px', minWidth: `${uniqueTasks.length * 120}px` }}>
+                <div className="flex-1 relative border-l border-border/50" style={{ height: '480px', minWidth: `${uniqueTasks.length * 150}px` }}>
                   {/* Hour grid lines */}
                   {Array.from({ length: 24 }, (_, i) => (
                     <div 
@@ -243,53 +243,76 @@ export default function StatisticsPage() {
                     />
                   ))}
                   
-                  {/* Task columns */}
+                  {/* Task column dividers */}
+                  {Array.from({ length: uniqueTasks.length + 1 }, (_, i) => (
+                    <div 
+                      key={i} 
+                      className="absolute h-full border-l border-border/50" 
+                      style={{ left: `${(i / uniqueTasks.length) * 100}%` }}
+                    />
+                  ))}
+                  
+                  {/* X-axis task labels */}
+                  <div className="absolute -bottom-10 w-full flex">
+                    {uniqueTasks.map((taskName, taskIndex) => (
+                      <div 
+                        key={taskName} 
+                        className="text-xs font-medium text-center px-2 truncate"
+                        style={{ 
+                          width: `${100 / uniqueTasks.length}%`,
+                          marginLeft: `${(taskIndex / uniqueTasks.length) * 100}%`,
+                          position: 'absolute'
+                        }}
+                        title={taskName}
+                      >
+                        {taskName}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Task time blocks */}
                   {uniqueTasks.map((taskName, taskIndex) => {
                     const taskBlocks = blocks.filter(block => block.taskName === taskName);
+                    const columnLeft = (taskIndex / uniqueTasks.length) * 100;
+                    const columnWidth = 100 / uniqueTasks.length;
                     
-                    return (
-                      <div key={taskName} className="absolute" style={{ 
-                        left: `${(taskIndex / uniqueTasks.length) * 100}%`,
-                        width: `${100 / uniqueTasks.length}%`,
-                        height: '100%'
-                      }}>
-                        {/* Task name header */}
-                        <div className="absolute -top-8 left-2 right-2 text-xs font-medium text-foreground truncate">
-                          {taskName}
-                        </div>
-                        
-                        {/* Task blocks */}
-                        {taskBlocks.map(block => {
-                          const startHour = new Date(block.startTime).getHours();
-                          const startMinute = new Date(block.startTime).getMinutes();
-                          const endHour = new Date(block.endTime).getHours();
-                          const endMinute = new Date(block.endTime).getMinutes();
-                          
-                          const startPercent = ((startHour + startMinute / 60) / 24) * 100;
-                          const endPercent = ((endHour + endMinute / 60) / 24) * 100;
-                          const height = endPercent - startPercent;
-                          
-                          return (
-                            <div
-                              key={block.id}
-                              className={`absolute left-1 right-1 rounded ${getProjectColor(block.projectName, block.folderName)} 
-                                border border-current/20 flex items-center justify-center text-xs font-medium`}
-                              style={{
-                                top: `${startPercent}%`,
-                                height: `${height}%`,
-                                minHeight: '20px'
-                              }}
-                              title={`${block.taskName}\n${new Date(block.startTime).toLocaleTimeString()} - ${new Date(block.endTime).toLocaleTimeString()}\n${Math.round(block.duration)} minutes`}
-                            >
-                              <div className="text-center">
-                                <div className="truncate">{Math.round(block.duration)}m</div>
-                                {block.type === 'focus' && <div>🍅</div>}
-                              </div>
+                    return taskBlocks.map(block => {
+                      const startHour = new Date(block.startTime).getHours();
+                      const startMinute = new Date(block.startTime).getMinutes();
+                      const endHour = new Date(block.endTime).getHours();
+                      const endMinute = new Date(block.endTime).getMinutes();
+                      
+                      const startPercent = ((startHour + startMinute / 60) / 24) * 100;
+                      const endPercent = ((endHour + endMinute / 60) / 24) * 100;
+                      const height = Math.max(endPercent - startPercent, 1.5); // Minimum height for visibility
+                      
+                      return (
+                        <div
+                          key={`${taskName}-${block.id}`}
+                          className={`absolute rounded-sm ${getProjectColor(block.projectName, block.folderName)} 
+                            border border-current/30 flex flex-col items-center justify-center text-xs font-medium
+                            shadow-sm`}
+                          style={{
+                            left: `${columnLeft + 1}%`, // Small margin from column edge
+                            width: `${columnWidth - 2}%`, // Small margin on both sides
+                            top: `${startPercent}%`,
+                            height: `${height}%`,
+                            minHeight: '24px'
+                          }}
+                          title={`${block.taskName}\n${new Date(block.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(block.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}\nDuration: ${Math.round(block.duration)} minutes`}
+                        >
+                          <div className="text-center p-1 leading-tight">
+                            <div className="font-semibold truncate text-xs" style={{ maxWidth: '100px' }}>
+                              {block.taskName}
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
+                            <div className="text-xs opacity-90 mt-0.5">
+                              {Math.round(block.duration)}m
+                            </div>
+                            {block.type === 'focus' && <div className="text-xs">🍅</div>}
+                          </div>
+                        </div>
+                      );
+                    });
                   })}
                 </div>
               </div>
