@@ -224,22 +224,31 @@ export default function StatisticsPage() {
             <div className="relative bg-muted/30 rounded-lg p-6 overflow-x-auto">
               <div className="flex gap-4">
                 {/* Y-axis (Hours) */}
-                <div className="flex flex-col justify-between py-2" style={{ height: '480px' }}>
-                  {Array.from({ length: 25 }, (_, i) => (
+                <div className="flex flex-col justify-between py-2" style={{ height: '960px' }}>
+                  {Array.from({ length: 49 }, (_, i) => (
                     <div key={i} className="text-xs text-muted-foreground font-mono min-h-[19px] flex items-center">
-                      {i < 24 ? `${i.toString().padStart(2, '0')}:00` : ''}
+                      {i < 48 ? `${Math.floor(i / 2).toString().padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}` : ''}
                     </div>
                   ))}
                 </div>
                 
                 {/* Graph Area */}
-                <div className="flex-1 relative border-l border-border/50" style={{ height: '480px', minWidth: `${uniqueTasks.length * 150}px` }}>
+                <div className="flex-1 relative border-l border-border/50" style={{ height: '960px', minWidth: `${uniqueTasks.length * 180}px` }}>
                   {/* Hour grid lines */}
                   {Array.from({ length: 24 }, (_, i) => (
                     <div 
-                      key={i} 
-                      className="absolute w-full border-t border-border/30" 
+                      key={`hour-${i}`} 
+                      className="absolute w-full border-t border-border/50" 
                       style={{ top: `${(i / 24) * 100}%` }}
+                    />
+                  ))}
+                  
+                  {/* Half-hour grid lines */}
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <div 
+                      key={`half-${i}`} 
+                      className="absolute w-full border-t border-border/20" 
+                      style={{ top: `${((i + 0.5) / 24) * 100}%` }}
                     />
                   ))}
                   
