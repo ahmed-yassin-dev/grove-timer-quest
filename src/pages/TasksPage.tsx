@@ -35,6 +35,7 @@ interface Project {
   color: string;
   expanded: boolean;
   folderId?: string;
+  completed?: boolean;
 }
 
 interface Folder {
@@ -126,7 +127,7 @@ export default function TasksPage() {
   };
 
   const toggleTask = (id: string) => {
-    setTasks(tasks.map(task => {
+    const updatedTasks = tasks.map(task => {
       if (task.id === id && !task.completed) {
         // Add a leaf to the tree when completing a task
         const gamification = JSON.parse(localStorage.getItem("gamification") || '{"fish": 0, "leaves": 0}');
@@ -139,7 +140,35 @@ export default function TasksPage() {
         });
       }
       return task.id === id ? { ...task, completed: !task.completed } : task;
-    }));
+    });
+    
+    setTasks(updatedTasks);
+    
+    // Check if any projects should be auto-completed
+    checkProjectCompletion(updatedTasks);
+  };
+
+  const checkProjectCompletion = (currentTasks: Task[]) => {
+    const updatedProjects = projects.map(project => {
+      const projectTasks = currentTasks.filter(task => task.projectId === project.id);
+      if (projectTasks.length > 0) {
+        const allCompleted = projectTasks.every(task => task.completed);
+        const anyCompleted = projectTasks.some(task => task.completed);
+        
+        if (allCompleted && !project.completed) {
+          toast({
+            title: "Project completed! 🎉",
+            description: `All tasks in "${project.name}" have been completed!`,
+          });
+          return { ...project, completed: true };
+        } else if (!anyCompleted && project.completed) {
+          return { ...project, completed: false };
+        }
+      }
+      return project;
+    });
+    
+    setProjects(updatedProjects);
   };
 
   const deleteTask = (id: string) => {
@@ -228,9 +257,19 @@ export default function TasksPage() {
       projects: projects.filter(project => project.folderId === folder.id)
     }));
     
+    // Group completed tasks by completed projects
+    const completedProjects = projects.filter(project => project.completed);
+    const completedProjectTasks = completedProjects.map(project => ({
+      project,
+      tasks: completedTasks.filter(task => task.projectId === project.id)
+    }));
+    const orphanCompletedTasks = completedTasks.filter(task => 
+      !task.projectId || !projects.find(p => p.id === task.projectId)?.completed
+    );
+    
     return {
       orphanTasks: activeTasks.filter(task => !task.projectId && !task.folderId),
-      projectTasks: orphanProjects.map(project => ({
+      projectTasks: orphanProjects.filter(p => !p.completed).map(project => ({
         project,
         tasks: activeTasks.filter(task => task.projectId === project.id)
       })),
@@ -239,7 +278,8 @@ export default function TasksPage() {
         tasks: activeTasks.filter(task => task.folderId === folder.id)
       })),
       folderProjects,
-      completedTasks
+      completedTasks: orphanCompletedTasks,
+      completedProjects: completedProjectTasks
     };
   };
 
@@ -252,7 +292,7 @@ export default function TasksPage() {
     return `${hours}h ${mins}m`;
   };
 
-  const { orphanTasks, projectTasks, folderTasks, folderProjects, completedTasks } = getTasksByCategory();
+  const { orphanTasks, projectTasks, folderTasks, folderProjects, completedTasks, completedProjects } = getTasksByCategory();
 
   const TaskItem = ({ task, isNested = false }: { task: Task; isNested?: boolean }) => (
     <Card 
@@ -329,7 +369,7 @@ export default function TasksPage() {
             onClick={() => setShowCompleted(!showCompleted)}
             className="transition-smooth"
           >
-            {showCompleted ? "Hide" : "Show"} Completed ({completedTasks.length})
+            {showCompleted ? "Hide" : "Show"} Completed ({completedTasks.length + (completedProjects?.reduce((sum, cp) => sum + cp.tasks.length, 0) || 0)})
           </Button>
         </div>
 
@@ -496,11 +536,28 @@ export default function TasksPage() {
         ))}
 
         {/* Completed tasks */}
-        {showCompleted && completedTasks.length > 0 && (
+        {showCompleted && (completedTasks.length > 0 || completedProjects.length > 0) && (
           <div className="space-y-3">
             <h2 className="text-xl font-semibold text-muted-foreground">
-              Completed ({completedTasks.length})
+              Completed ({completedTasks.length + completedProjects.reduce((sum, cp) => sum + cp.tasks.length, 0)})
             </h2>
+            
+            {/* Completed projects with their tasks */}
+            {completedProjects.map(({ project, tasks: projectCompletedTasks }) => (
+              <div key={project.id} className="space-y-2">
+                <div className="flex items-center gap-2 p-2 rounded bg-muted/30">
+                  <h3 className="text-lg font-medium text-muted-foreground" style={{ color: project.color }}>
+                    ✅ {project.name} ({projectCompletedTasks.length})
+                  </h3>
+                  <Badge variant="secondary" className="text-xs">Project Complete</Badge>
+                </div>
+                {projectCompletedTasks.map(task => (
+                  <TaskItem key={task.id} task={task} isNested />
+                ))}
+              </div>
+            ))}
+            
+            {/* Individual completed tasks */}
             {completedTasks.map(task => (
               <TaskItem key={task.id} task={task} />
             ))}

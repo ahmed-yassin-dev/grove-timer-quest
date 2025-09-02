@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Target, ChevronLeft, ChevronRight, CheckCircle, CalendarDays, Trophy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -13,6 +13,27 @@ interface TaskBlock {
   duration: number;
   type: 'focus' | 'break';
   completed: boolean;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  pomodoroCount: number;
+  timeSpent: number;
+  tags: string[];
+  projectId?: string;
+  folderId?: string;
+  createdAt: string;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  color: string;
+  expanded: boolean;
+  folderId?: string;
+  completed?: boolean;
 }
 
 interface Statistics {
@@ -36,6 +57,8 @@ export default function StatisticsPage() {
     taskBlocks: {},
   });
   
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'calendar' | 'detail'>('calendar');
@@ -54,6 +77,13 @@ export default function StatisticsPage() {
         }
         setStatistics(parsed);
       }
+
+      // Load tasks and projects
+      const savedTasks = localStorage.getItem("tasks");
+      if (savedTasks) setTasks(JSON.parse(savedTasks));
+      
+      const savedProjects = localStorage.getItem("projects");
+      if (savedProjects) setProjects(JSON.parse(savedProjects));
     };
 
     loadData();
@@ -83,6 +113,33 @@ export default function StatisticsPage() {
       .filter(([date]) => date.startsWith(thisMonth))
       .reduce((sum, [, time]) => sum + time, 0);
     return { sessions, focusTime };
+  };
+
+  const getCompletedTaskCounts = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const thisWeek = getWeekStart(new Date());
+    
+    const completedTasks = tasks.filter(task => task.completed);
+    const totalCompleted = completedTasks.length;
+    
+    const todayCompleted = completedTasks.filter(task => {
+      const taskCompletedDate = new Date(task.createdAt).toISOString().split('T')[0];
+      return taskCompletedDate === today;
+    }).length;
+    
+    const weekCompleted = completedTasks.filter(task => {
+      const taskDate = new Date(task.createdAt);
+      return taskDate >= thisWeek && taskDate <= new Date();
+    }).length;
+
+    return { totalCompleted, todayCompleted, weekCompleted };
+  };
+
+  const getWeekStart = (date: Date) => {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = start.getDate() - day;
+    return new Date(start.setDate(diff));
   };
 
   const getMonthDays = () => {
@@ -141,8 +198,9 @@ export default function StatisticsPage() {
 
   const renderDayDetail = (date: string) => {
     const blocks = getDayBlocks(date);
-    const hours = Array.from({ length: 24 }, (_, i) => i);
-
+    const uniqueTasks = Array.from(new Set(blocks.map(block => block.taskName)));
+    const maxTaskNameLength = Math.max(...uniqueTasks.map(name => name.length), 10);
+    
     return (
       <Card className="shadow-card">
         <CardHeader>
@@ -161,32 +219,102 @@ export default function StatisticsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {hours.map(hour => {
-              const hourBlocks = blocks.filter(block => {
-                const startHour = new Date(block.startTime).getHours();
-                return startHour === hour;
-              });
-
-              return (
-                <div key={hour} className="flex items-center gap-4 py-2 border-b border-border/50">
-                  <div className="w-16 text-sm font-mono text-muted-foreground">
-                    {hour.toString().padStart(2, '0')}:00
-                  </div>
-                  <div className="flex-1 min-h-[32px] flex items-center gap-2">
-                    {hourBlocks.map(block => (
-                      <div
-                        key={block.id}
-                        className={`px-3 py-1 rounded text-sm font-medium ${getProjectColor(block.projectName, block.folderName)}`}
-                      >
-                        {block.taskName} ({Math.round(block.duration)}m)
-                        {block.type === 'focus' && ' 🍅'}
-                      </div>
-                    ))}
-                  </div>
+          <div className="space-y-4">
+            {/* Timeline Graph */}
+            <div className="relative bg-muted/30 rounded-lg p-4 overflow-x-auto">
+              <div className="flex gap-4">
+                {/* Y-axis (Hours) */}
+                <div className="flex flex-col justify-between py-2" style={{ height: '480px' }}>
+                  {Array.from({ length: 25 }, (_, i) => (
+                    <div key={i} className="text-xs text-muted-foreground font-mono min-h-[18px] flex items-center">
+                      {i < 24 ? `${i.toString().padStart(2, '0')}:00` : ''}
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
+                
+                {/* Graph Area */}
+                <div className="flex-1 relative" style={{ height: '480px', minWidth: `${uniqueTasks.length * 120}px` }}>
+                  {/* Hour grid lines */}
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <div 
+                      key={i} 
+                      className="absolute w-full border-t border-border/30" 
+                      style={{ top: `${(i / 24) * 100}%` }}
+                    />
+                  ))}
+                  
+                  {/* Task columns */}
+                  {uniqueTasks.map((taskName, taskIndex) => {
+                    const taskBlocks = blocks.filter(block => block.taskName === taskName);
+                    
+                    return (
+                      <div key={taskName} className="absolute" style={{ 
+                        left: `${(taskIndex / uniqueTasks.length) * 100}%`,
+                        width: `${100 / uniqueTasks.length}%`,
+                        height: '100%'
+                      }}>
+                        {/* Task name header */}
+                        <div className="absolute -top-8 left-2 right-2 text-xs font-medium text-foreground truncate">
+                          {taskName}
+                        </div>
+                        
+                        {/* Task blocks */}
+                        {taskBlocks.map(block => {
+                          const startHour = new Date(block.startTime).getHours();
+                          const startMinute = new Date(block.startTime).getMinutes();
+                          const endHour = new Date(block.endTime).getHours();
+                          const endMinute = new Date(block.endTime).getMinutes();
+                          
+                          const startPercent = ((startHour + startMinute / 60) / 24) * 100;
+                          const endPercent = ((endHour + endMinute / 60) / 24) * 100;
+                          const height = endPercent - startPercent;
+                          
+                          return (
+                            <div
+                              key={block.id}
+                              className={`absolute left-1 right-1 rounded ${getProjectColor(block.projectName, block.folderName)} 
+                                border border-current/20 flex items-center justify-center text-xs font-medium`}
+                              style={{
+                                top: `${startPercent}%`,
+                                height: `${height}%`,
+                                minHeight: '20px'
+                              }}
+                              title={`${block.taskName}\n${new Date(block.startTime).toLocaleTimeString()} - ${new Date(block.endTime).toLocaleTimeString()}\n${Math.round(block.duration)} minutes`}
+                            >
+                              <div className="text-center">
+                                <div className="truncate">{Math.round(block.duration)}m</div>
+                                {block.type === 'focus' && <div>🍅</div>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            
+            {/* Legend */}
+            {uniqueTasks.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Tasks</h4>
+                <div className="flex flex-wrap gap-2">
+                  {uniqueTasks.map(taskName => {
+                    const taskBlocks = blocks.filter(block => block.taskName === taskName);
+                    const totalTime = taskBlocks.reduce((sum, block) => sum + block.duration, 0);
+                    const projectName = taskBlocks[0]?.projectName;
+                    const folderName = taskBlocks[0]?.folderName;
+                    
+                    return (
+                      <div key={taskName} className={`px-3 py-1 rounded text-sm ${getProjectColor(projectName, folderName)}`}>
+                        {taskName} ({formatTime(totalTime)})
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -196,6 +324,7 @@ export default function StatisticsPage() {
   const todayStats = getTodayStats();
   const monthStats = getCurrentMonthStats();
   const monthDays = getMonthDays();
+  const completedCounts = getCompletedTaskCounts();
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -208,7 +337,7 @@ export default function StatisticsPage() {
         </div>
 
         {/* Enhanced Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -253,6 +382,51 @@ export default function StatisticsPage() {
                 <div className="text-2xl font-bold text-tree-green">{statistics.totalSessions} sessions</div>
                 <div className="text-lg font-medium text-accent">{formatTime(statistics.totalFocusTime)}</div>
                 <p className="text-xs text-muted-foreground">Total focus time</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-primary" />
+                Tasks Today
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="text-2xl font-bold text-primary">{completedCounts.todayCompleted}</div>
+                <p className="text-xs text-muted-foreground">Completed today</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-pond-blue" />
+                This Week
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="text-2xl font-bold text-pond-blue">{completedCounts.weekCompleted}</div>
+                <p className="text-xs text-muted-foreground">Tasks completed</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-fish-orange" />
+                Total Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="text-2xl font-bold text-fish-orange">{completedCounts.totalCompleted}</div>
+                <p className="text-xs text-muted-foreground">All time completed</p>
               </div>
             </CardContent>
           </Card>
