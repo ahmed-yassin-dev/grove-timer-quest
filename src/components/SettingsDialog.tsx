@@ -128,7 +128,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Timer className="h-5 w-5" />
@@ -145,7 +145,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="focus-time">Focus Time (minutes)</Label>
                   <Input
@@ -179,7 +179,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="long-break">Long Break (minutes)</Label>
                   <Input
@@ -226,15 +226,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={exportData}
-                  className="bg-nature-gradient hover:opacity-90 transition-smooth"
+                  className="bg-nature-gradient hover:opacity-90 transition-smooth flex-1 sm:flex-none"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export Data
                 </Button>
-                <div>
+                <div className="flex-1 sm:flex-none">
                   <input
                     type="file"
                     accept=".json"
@@ -245,7 +245,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant="outline"
                     onClick={() => document.getElementById("import-file")?.click()}
-                    className="transition-smooth"
+                    className="transition-smooth w-full"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Import Data
@@ -289,7 +289,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Color Themes</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <Button
                     variant={theme === "nature" ? "default" : "outline"}
                     size="sm"
@@ -349,11 +349,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex flex-col sm:flex-row justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
-            <Button onClick={saveSettings} className="bg-nature-gradient">
+            <Button 
+              onClick={saveSettings} 
+              className="bg-nature-gradient w-full sm:w-auto"
+            >
               Save Settings
             </Button>
           </div>
