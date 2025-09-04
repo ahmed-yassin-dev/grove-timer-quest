@@ -37,10 +37,10 @@ export default function TreePage() {
   const getTreeStage = () => {
     const leaves = gamification.leaves;
     if (leaves === 0) return "seed";
-    if (leaves < 3) return "sprout";
-    if (leaves < 8) return "sapling";
-    if (leaves < 20) return "young";
-    if (leaves < 40) return "mature";
+    if (leaves < 10) return "sprout";
+    if (leaves < 25) return "sapling";
+    if (leaves < 50) return "young";
+    if (leaves < 100) return "mature";
     return "ancient";
   };
 
@@ -149,9 +149,9 @@ export default function TreePage() {
                           ? "Maxed!" 
                           : `${gamification.leaves}/${
                               stage === "seed" ? 1 :
-                              stage === "sprout" ? 3 :
-                              stage === "sapling" ? 8 :
-                              stage === "young" ? 20 : 40
+                              stage === "sprout" ? 10 :
+                              stage === "sapling" ? 25 :
+                              stage === "young" ? 50 : 100
                             }`}
                       </span>
                     </div>
@@ -164,9 +164,9 @@ export default function TreePage() {
                             : `${Math.min(
                                 (gamification.leaves / (
                                   stage === "seed" ? 1 :
-                                  stage === "sprout" ? 3 :
-                                  stage === "sapling" ? 8 :
-                                  stage === "young" ? 20 : 40
+                                  stage === "sprout" ? 10 :
+                                  stage === "sapling" ? 25 :
+                                  stage === "young" ? 50 : 100
                                 )) * 100,
                                 100
                               )}%`,
