@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Play, Pause, RotateCcw, CheckCircle } from "lucide-react";
+import { Play, Pause, RotateCcw, CheckCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -53,6 +53,8 @@ export default function PomodoroPage() {
     toggleTimer,
     resetTimer,
     setSelectedTask,
+    completeCurrentTask,
+    clearCurrentTask,
     formatTime,
     getTotalTime,
     getProgress,
@@ -82,18 +84,38 @@ export default function PomodoroPage() {
                 <p className="text-sm text-muted-foreground mb-1">Working on:</p>
                 <p className="font-medium">{timer.currentTask}</p>
                 {selectedTask && (
-                  <div className="flex gap-2 mt-2 justify-center">
+                  <div className="flex gap-2 mt-2 justify-center flex-wrap">
                     <span className="text-xs bg-secondary px-2 py-1 rounded">
                       🍅 {selectedTask.pomodoroCount || 0} cycles
                     </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate("/tasks")}
-                      className="text-xs h-6"
-                    >
-                      Back to Tasks
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"  
+                        onClick={completeCurrentTask}
+                        className="text-xs h-6 text-accent hover:bg-accent/10"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Complete
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearCurrentTask}
+                        className="text-xs h-6 text-muted-foreground hover:bg-destructive/10"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Clear
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/tasks")}
+                        className="text-xs h-6"
+                      >
+                        Back to Tasks
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>

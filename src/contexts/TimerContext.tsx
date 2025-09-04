@@ -47,6 +47,8 @@ interface TimerContextType {
   toggleTimer: () => void;
   resetTimer: () => void;
   setSelectedTask: (task: any) => void;
+  completeCurrentTask: () => void;
+  clearCurrentTask: () => void;
   updateSettings: (newSettings: TimerSettings) => void;
   formatTime: (seconds: number) => string;
   getTotalTime: () => number;
@@ -358,6 +360,44 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("timer-state", JSON.stringify(updatedTimer));
   };
 
+  const completeCurrentTask = () => {
+    if (!selectedTask) return;
+    
+    const savedTasks = localStorage.getItem("tasks");
+    if (savedTasks) {
+      const tasks = JSON.parse(savedTasks);
+      const updatedTasks = tasks.map((task: any) =>
+        task.id === selectedTask.id
+          ? { ...task, completed: true }
+          : task
+      );
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      
+      // Add a leaf to the tree when completing a task
+      const gamification = JSON.parse(localStorage.getItem("gamification") || '{"fish": 0, "leaves": 0}');
+      gamification.leaves += 1;
+      localStorage.setItem("gamification", JSON.stringify(gamification));
+      
+      toast({
+        title: "Task completed! 🌱",
+        description: `"${selectedTask.title}" marked as complete! A new leaf has been added to your tree!`,
+      });
+    }
+    
+    // Clear the current task
+    clearCurrentTask();
+  };
+
+  const clearCurrentTask = () => {
+    setSelectedTask(null);
+    setTimer(prev => ({ ...prev, currentTask: undefined }));
+    
+    toast({
+      title: "Task cleared",
+      description: "No task selected for focus session",
+    });
+  };
+
   const updateSettings = (newSettings: TimerSettings) => {
     setSettings(newSettings);
     localStorage.setItem("timer-settings", JSON.stringify(newSettings));
@@ -407,6 +447,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     toggleTimer,
     resetTimer,
     setSelectedTask,
+    completeCurrentTask,
+    clearCurrentTask,
     updateSettings,
     formatTime,
     getTotalTime,

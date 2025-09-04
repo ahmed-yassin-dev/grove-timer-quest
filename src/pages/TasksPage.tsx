@@ -176,7 +176,14 @@ export default function TasksPage() {
   };
 
   const startTimer = (task: Task) => {
-    // Store selected task and navigate to pomodoro page
+    // If there's already a selected task, put it back in the tasks list
+    const currentSelectedTask = localStorage.getItem("selectedTask");
+    if (currentSelectedTask) {
+      const currentTask = JSON.parse(currentSelectedTask);
+      // No need to do anything special - the task is already in the tasks list
+    }
+    
+    // Store new selected task and navigate to pomodoro page
     localStorage.setItem("selectedTask", JSON.stringify(task));
     navigate("/");
   };
