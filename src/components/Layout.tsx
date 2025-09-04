@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { SettingsDialog } from "@/components/SettingsDialog";
+import { TimerIndicator } from "@/components/TimerIndicator";
 
 export function Layout() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -18,14 +19,17 @@ export function Layout() {
           <header className="h-16 flex items-center justify-between px-6 border-b border-border bg-card">
             <SidebarTrigger className="hover:bg-muted transition-smooth" />
             
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setSettingsOpen(true)}
-              className="hover:bg-muted transition-smooth"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-3">
+              <TimerIndicator />
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setSettingsOpen(true)}
+                className="hover:bg-muted transition-smooth"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
           </header>
           
           <div className="flex-1 overflow-auto">
