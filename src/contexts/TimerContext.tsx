@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { playFocusCompleteSound, playBreakCompleteSound, playLongBreakSound } from "@/utils/sounds";
 
 interface TimerSettings {
   focusTime: number;
@@ -252,15 +253,34 @@ export function TimerProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("tasks", JSON.stringify(updatedTasks));
         }
       }
+
+      // Play focus complete sound
+      playFocusCompleteSound().catch(console.warn);
       
-      toast({
-        title: "Focus session completed! 🌱",
-        description: selectedTask 
-          ? `Great work on "${selectedTask.title}"! Your tree has grown!`
-          : "Your tree has grown!",
-      });
+      // Check if next is long break to play special sound
+      const nextCycle = timer.cycle + 1;
+      if (nextCycle % settings.longBreakInterval === 0) {
+        // Play long break sound after a delay
+        setTimeout(() => playLongBreakSound().catch(console.warn), 1000);
+        toast({
+          title: "Focus session completed! 🏆",
+          description: selectedTask 
+            ? `Amazing work on "${selectedTask.title}"! Time for a long break!`
+            : "Incredible focus! Time for a long break!",
+        });
+      } else {
+        toast({
+          title: "Focus session completed! 🌱",
+          description: selectedTask 
+            ? `Great work on "${selectedTask.title}"! Your tree has grown!`
+            : "Your tree has grown!",
+        });
+      }
     } else {
       newStatistics.totalBreakTime += timer.mode === "shortBreak" ? settings.shortBreak : settings.longBreak;
+      
+      // Play break complete sound
+      playBreakCompleteSound().catch(console.warn);
       
       toast({
         title: "Break completed! ✨",
