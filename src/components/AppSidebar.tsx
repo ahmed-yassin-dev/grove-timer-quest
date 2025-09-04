@@ -3,7 +3,6 @@ import {
   CheckSquare, 
   BarChart3, 
   TreePine, 
-  Waves, 
   Settings 
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -24,7 +23,6 @@ const navigationItems = [
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Statistics", url: "/stats", icon: BarChart3 },
   { title: "Tree", url: "/tree", icon: TreePine },
-  { title: "Pond", url: "/pond", icon: Waves },
 ];
 
 export function AppSidebar() {

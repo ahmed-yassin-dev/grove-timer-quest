@@ -36,6 +36,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     longBreakInterval: 4,
   });
 
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    // Force immediate theme application
+    document.documentElement.setAttribute('data-theme', newTheme);
+    document.documentElement.className = newTheme;
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem("timer-settings");
     if (saved) {
@@ -262,7 +269,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "light" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("light")}
+                    onClick={() => handleThemeChange("light")}
                     className="flex-1"
                   >
                     <Sun className="h-4 w-4 mr-2" />
@@ -271,7 +278,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "dark" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("dark")}
+                    onClick={() => handleThemeChange("dark")}
                     className="flex-1"
                   >
                     <Moon className="h-4 w-4 mr-2" />
@@ -286,7 +293,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "nature" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("nature")}
+                    onClick={() => handleThemeChange("nature")}
                     className="justify-start"
                   >
                     <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
@@ -295,7 +302,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "ocean" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("ocean")}
+                    onClick={() => handleThemeChange("ocean")}
                     className="justify-start"
                   >
                     <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
@@ -304,7 +311,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "sunset" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("sunset")}
+                    onClick={() => handleThemeChange("sunset")}
                     className="justify-start"
                   >
                     <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
@@ -313,7 +320,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "forest" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("forest")}
+                    onClick={() => handleThemeChange("forest")}
                     className="justify-start"
                   >
                     <div className="w-3 h-3 rounded-full bg-emerald-600 mr-2"></div>
@@ -322,7 +329,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "lavender" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("lavender")}
+                    onClick={() => handleThemeChange("lavender")}
                     className="justify-start"
                   >
                     <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
@@ -331,7 +338,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <Button
                     variant={theme === "cherry" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setTheme("cherry")}
+                    onClick={() => handleThemeChange("cherry")}
                     className="justify-start"
                   >
                     <div className="w-3 h-3 rounded-full bg-pink-500 mr-2"></div>

@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { TreePine, Leaf } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import treeSeed from "@/assets/tree-seed.png";
+import treeSprout from "@/assets/tree-sprout.png";
+import treeSapling from "@/assets/tree-sapling.png";
+import treeYoung from "@/assets/tree-young.png";
+import treeMature from "@/assets/tree-mature.png";
+import treeAncient from "@/assets/tree-ancient.png";
 
 interface Gamification {
   fish: number;
@@ -28,14 +34,6 @@ export default function TreePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const getTreeSize = () => {
-    const leaves = gamification.leaves;
-    if (leaves < 5) return { size: "small", height: "h-32" };
-    if (leaves < 15) return { size: "medium", height: "h-48" };
-    if (leaves < 30) return { size: "large", height: "h-64" };
-    return { size: "giant", height: "h-80" };
-  };
-
   const getTreeStage = () => {
     const leaves = gamification.leaves;
     if (leaves === 0) return "seed";
@@ -44,6 +42,19 @@ export default function TreePage() {
     if (leaves < 20) return "young";
     if (leaves < 40) return "mature";
     return "ancient";
+  };
+
+  const getTreeImage = () => {
+    const stage = getTreeStage();
+    switch (stage) {
+      case "seed": return treeSeed;
+      case "sprout": return treeSprout;
+      case "sapling": return treeSapling;
+      case "young": return treeYoung;
+      case "mature": return treeMature;
+      case "ancient": return treeAncient;
+      default: return treeSeed;
+    }
   };
 
   const getTreeDescription = () => {
@@ -64,17 +75,7 @@ export default function TreePage() {
     }
   };
 
-  const { size, height } = getTreeSize();
   const stage = getTreeStage();
-
-  // Generate leaf positions for animation
-  const leafPositions = Array.from({ length: Math.min(gamification.leaves, 50) }, (_, i) => ({
-    id: i,
-    left: `${20 + Math.random() * 60}%`,
-    top: `${20 + Math.random() * 60}%`,
-    delay: Math.random() * 2,
-    size: 0.8 + Math.random() * 0.4,
-  }));
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -84,7 +85,7 @@ export default function TreePage() {
             Your Productivity Tree
           </h1>
           <p className="text-muted-foreground">
-            Every completed task adds a leaf to your tree
+            Every completed task helps your tree grow
           </p>
         </div>
 
@@ -93,72 +94,12 @@ export default function TreePage() {
           <div className="lg:col-span-2">
             <Card className="shadow-nature">
               <CardContent className="p-8">
-                <div className="relative mx-auto" style={{ maxWidth: '400px', minHeight: '300px' }}>
-                  {/* Sky background */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-sky-200 to-green-100 rounded-lg" />
-                  
-                  {/* Ground */}
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-tree-brown to-green-200 rounded-b-lg" />
-                  
-                  {/* Tree trunk - only show if sprout or higher */}
-                  {stage !== "seed" && (
-                    <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 w-6 bg-tree-brown rounded-t-lg animate-float"
-                         style={{ height: `${Math.min(gamification.leaves * 3, 80)}px` }} />
-                  )}
-                  
-                  {/* Seed */}
-                  {stage === "seed" && (
-                    <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-                      <div className="w-3 h-3 bg-tree-brown rounded-full animate-grow" />
-                    </div>
-                  )}
-                  
-                  {/* Tree crown */}
-                  {stage !== "seed" && (
-                    <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-                      <div className={`relative ${height} w-40 mx-auto`}>
-                        {/* Base tree shape */}
-                        <TreePine 
-                          className={`w-full h-full text-tree-green transition-all duration-1000 ${
-                            stage === "sprout" ? "opacity-60" : "opacity-90"
-                          }`}
-                        />
-                        
-                        {/* Animated leaves */}
-                        {leafPositions.map((leaf) => (
-                          <div
-                            key={leaf.id}
-                            className="absolute animate-leaf-fall"
-                            style={{
-                              left: leaf.left,
-                              top: leaf.top,
-                              animationDelay: `${leaf.delay}s`,
-                              transform: `scale(${leaf.size})`,
-                            }}
-                          >
-                            <Leaf className="w-4 h-4 text-accent animate-float" 
-                                  style={{ animationDelay: `${leaf.delay}s` }} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Floating particles */}
-                  <div className="absolute inset-0 overflow-hidden rounded-lg">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute w-1 h-1 bg-accent rounded-full animate-float opacity-60"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 3}s`,
-                          animationDuration: `${3 + Math.random() * 2}s`,
-                        }}
-                      />
-                    ))}
-                  </div>
+                <div className="relative mx-auto flex items-center justify-center" style={{ maxWidth: '400px', minHeight: '300px' }}>
+                  <img 
+                    src={getTreeImage()} 
+                    alt={`${stage} tree`}
+                    className="max-w-full max-h-full object-contain animate-fade-in"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -185,13 +126,6 @@ export default function TreePage() {
                   <div className="text-sm text-muted-foreground">Total Leaves</div>
                   <div className="text-2xl font-bold text-accent">
                     {gamification.leaves}
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-sm text-muted-foreground">Size</div>
-                  <div className="text-lg font-medium capitalize text-primary">
-                    {size}
                   </div>
                 </div>
               </CardContent>

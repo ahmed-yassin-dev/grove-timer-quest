@@ -8,7 +8,6 @@ import PomodoroPage from "@/pages/PomodoroPage";
 import TasksPage from "@/pages/TasksPage";
 import StatisticsPage from "@/pages/StatisticsPage";
 import TreePage from "@/pages/TreePage";
-import PondPage from "@/pages/PondPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,7 +24,6 @@ const App = () => (
             <Route path="tasks" element={<TasksPage />} />
             <Route path="stats" element={<StatisticsPage />} />
             <Route path="tree" element={<TreePage />} />
-            <Route path="pond" element={<PondPage />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
