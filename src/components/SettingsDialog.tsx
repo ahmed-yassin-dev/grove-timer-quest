@@ -252,29 +252,92 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <CardHeader>
               <CardTitle className="text-lg">Appearance</CardTitle>
               <CardDescription>
-                Choose your preferred theme
+                Choose your preferred theme and color scheme
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
-                <Button
-                  variant={theme === "light" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setTheme("light")}
-                  className="flex-1"
-                >
-                  <Sun className="h-4 w-4 mr-2" />
-                  Light
-                </Button>
-                <Button
-                  variant={theme === "dark" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setTheme("dark")}
-                  className="flex-1"
-                >
-                  <Moon className="h-4 w-4 mr-2" />
-                  Dark
-                </Button>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Theme Mode</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={theme === "light" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("light")}
+                    className="flex-1"
+                  >
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light
+                  </Button>
+                  <Button
+                    variant={theme === "dark" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("dark")}
+                    className="flex-1"
+                  >
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Color Themes</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={theme === "nature" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("nature")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    Nature
+                  </Button>
+                  <Button
+                    variant={theme === "ocean" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("ocean")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    Ocean
+                  </Button>
+                  <Button
+                    variant={theme === "sunset" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("sunset")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
+                    Sunset
+                  </Button>
+                  <Button
+                    variant={theme === "forest" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("forest")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-emerald-600 mr-2"></div>
+                    Forest
+                  </Button>
+                  <Button
+                    variant={theme === "lavender" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("lavender")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                    Lavender
+                  </Button>
+                  <Button
+                    variant={theme === "cherry" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("cherry")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-pink-500 mr-2"></div>
+                    Cherry
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

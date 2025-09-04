@@ -88,7 +88,18 @@ export default function PomodoroPage() {
 
     const savedTimer = localStorage.getItem("timer-state");
     if (savedTimer) {
-      setTimer(JSON.parse(savedTimer));
+      const timerState = JSON.parse(savedTimer);
+      // Prevent false completions on page reload - if timer was completed, reset it
+      if (timerState.timeLeft === 0) {
+        timerState.timeLeft = timerState.mode === "focus" 
+          ? (savedSettings ? JSON.parse(savedSettings).focusTime * 60 : 25 * 60)
+          : timerState.mode === "shortBreak" 
+            ? (savedSettings ? JSON.parse(savedSettings).shortBreak * 60 : 5 * 60)
+            : (savedSettings ? JSON.parse(savedSettings).longBreak * 60 : 15 * 60);
+        timerState.isRunning = false;
+        timerState.sessionStartTime = undefined;
+      }
+      setTimer(timerState);
     }
 
     // Load selected task and clear from storage

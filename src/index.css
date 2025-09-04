@@ -121,6 +121,66 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Nature Theme */
+  .nature {
+    --background: 140 25% 97%;
+    --foreground: 140 15% 20%;
+    --primary: 140 50% 40%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 30% 85%;
+    --accent: 120 65% 45%;
+  }
+
+  /* Ocean Theme */
+  .ocean {
+    --background: 200 30% 96%;
+    --foreground: 200 20% 15%;
+    --primary: 200 80% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 180 25% 85%;
+    --accent: 180 70% 40%;
+  }
+
+  /* Sunset Theme */
+  .sunset {
+    --background: 25 25% 96%;
+    --foreground: 25 20% 15%;
+    --primary: 25 80% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 45 30% 85%;
+    --accent: 15 75% 50%;
+  }
+
+  /* Forest Theme */
+  .forest {
+    --background: 160 20% 95%;
+    --foreground: 160 25% 12%;
+    --primary: 160 60% 30%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 140 25% 82%;
+    --accent: 120 70% 35%;
+  }
+
+  /* Lavender Theme */
+  .lavender {
+    --background: 280 25% 96%;
+    --foreground: 280 20% 15%;
+    --primary: 280 60% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 260 25% 85%;
+    --accent: 290 65% 50%;
+  }
+
+  /* Cherry Theme */
+  .cherry {
+    --background: 350 25% 96%;
+    --foreground: 350 20% 15%;
+    --primary: 350 75% 60%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 340 30% 85%;
+    --accent: 320 70% 55%;
+  }
 }
 
 @layer base {
