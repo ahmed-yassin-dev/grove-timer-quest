@@ -344,6 +344,42 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="w-3 h-3 rounded-full bg-pink-500 mr-2"></div>
                     Cherry
                   </Button>
+                  <Button
+                    variant={theme === "midnight" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleThemeChange("midnight")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-indigo-600 mr-2"></div>
+                    Midnight
+                  </Button>
+                  <Button
+                    variant={theme === "slate" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleThemeChange("slate")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-slate-600 mr-2"></div>
+                    Slate
+                  </Button>
+                  <Button
+                    variant={theme === "obsidian" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleThemeChange("obsidian")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-yellow-600 mr-2"></div>
+                    Obsidian
+                  </Button>
+                  <Button
+                    variant={theme === "cyberpunk" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleThemeChange("cyberpunk")}
+                    className="justify-start"
+                  >
+                    <div className="w-3 h-3 rounded-full bg-cyan-400 mr-2"></div>
+                    Cyberpunk
+                  </Button>
                 </div>
               </div>
             </CardContent>

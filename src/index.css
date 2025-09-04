@@ -181,6 +181,46 @@
     --secondary: 340 30% 85%;
     --accent: 320 70% 55%;
   }
+
+  /* Midnight Theme */
+  .midnight {
+    --background: 240 10% 8%;
+    --foreground: 240 5% 95%;
+    --primary: 260 85% 65%;
+    --primary-foreground: 240 5% 95%;
+    --secondary: 240 10% 15%;
+    --accent: 280 75% 70%;
+  }
+
+  /* Slate Theme */
+  .slate {
+    --background: 210 15% 7%;
+    --foreground: 210 5% 96%;
+    --primary: 210 50% 60%;
+    --primary-foreground: 210 5% 96%;
+    --secondary: 210 15% 13%;
+    --accent: 200 40% 65%;
+  }
+
+  /* Obsidian Theme */
+  .obsidian {
+    --background: 0 0% 5%;
+    --foreground: 45 30% 90%;
+    --primary: 45 85% 65%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 12%;
+    --accent: 30 90% 70%;
+  }
+
+  /* Cyberpunk Theme */
+  .cyberpunk {
+    --background: 280 8% 6%;
+    --foreground: 180 100% 85%;
+    --primary: 160 100% 50%;
+    --primary-foreground: 280 8% 6%;
+    --secondary: 280 8% 14%;
+    --accent: 300 100% 60%;
+  }
 }
 
 @layer base {
