@@ -182,7 +182,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   }, [timer.timeLeft, timer.isRunning]);
 
   const handleTimerComplete = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
+    // Use local date for Algeria timezone
+    const localDate = new Date();
+    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    const today = localDate.toISOString().split('T')[0];
     const thisMonth = today.slice(0, 7);
     const now = new Date().toISOString();
 

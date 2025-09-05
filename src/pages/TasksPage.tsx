@@ -185,7 +185,7 @@ export default function TasksPage() {
     
     // Store new selected task and navigate to pomodoro page
     localStorage.setItem("selectedTask", JSON.stringify(task));
-    navigate("/");
+    navigate("/pomodoro");
   };
 
   const moveTaskToProject = (taskId: string, projectId: string) => {

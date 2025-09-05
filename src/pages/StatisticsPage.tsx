@@ -99,15 +99,21 @@ export default function StatisticsPage() {
   };
 
   const getTodayStats = () => {
-    const today = new Date().toISOString().split('T')[0];
+    // Use local date for Algeria timezone
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    const todayString = today.toISOString().split('T')[0];
     return {
-      sessions: statistics.dailySessions[today] || 0,
-      focusTime: statistics.dailyFocusTime[today] || 0
+      sessions: statistics.dailySessions[todayString] || 0,
+      focusTime: statistics.dailyFocusTime[todayString] || 0
     };
   };
 
   const getCurrentMonthStats = () => {
-    const thisMonth = new Date().toISOString().slice(0, 7);
+    // Use local date for Algeria timezone
+    const currentDate = new Date();
+    currentDate.setMinutes(currentDate.getMinutes() - currentDate.getTimezoneOffset());
+    const thisMonth = currentDate.toISOString().slice(0, 7);
     const sessions = statistics.monthlySessions[thisMonth] || 0;
     const focusTime = Object.entries(statistics.dailyFocusTime)
       .filter(([date]) => date.startsWith(thisMonth))
@@ -116,15 +122,20 @@ export default function StatisticsPage() {
   };
 
   const getCompletedTaskCounts = () => {
-    const today = new Date().toISOString().split('T')[0];
+    // Use local date for Algeria timezone
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    const todayString = today.toISOString().split('T')[0];
     const thisWeek = getWeekStart(new Date());
     
     const completedTasks = tasks.filter(task => task.completed);
     const totalCompleted = completedTasks.length;
     
     const todayCompleted = completedTasks.filter(task => {
-      const taskCompletedDate = new Date(task.createdAt).toISOString().split('T')[0];
-      return taskCompletedDate === today;
+      const taskDate = new Date(task.createdAt);
+      taskDate.setMinutes(taskDate.getMinutes() - taskDate.getTimezoneOffset());
+      const taskCompletedDate = taskDate.toISOString().split('T')[0];
+      return taskCompletedDate === todayString;
     }).length;
     
     const weekCompleted = completedTasks.filter(task => {
@@ -158,16 +169,23 @@ export default function StatisticsPage() {
     
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
+      // Use local timezone for proper date representation
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
       const dateString = date.toISOString().split('T')[0];
       const sessions = statistics.dailySessions[dateString] || 0;
       const focusTime = statistics.dailyFocusTime[dateString] || 0;
+      
+      // Check if it's today in local timezone
+      const today = new Date();
+      today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+      const todayString = today.toISOString().split('T')[0];
       
       days.push({
         day,
         date: dateString,
         sessions,
         focusTime,
-        isToday: dateString === new Date().toISOString().split('T')[0],
+        isToday: dateString === todayString,
       });
     }
     
