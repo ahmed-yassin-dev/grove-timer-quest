@@ -14,7 +14,7 @@ export function TimerIndicator() {
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => navigate("/pomodoro")}
+      onClick={() => navigate("/")}
       className="flex items-center gap-2 text-xs hover:bg-muted transition-smooth"
     >
       <Clock className="h-3 w-3" />

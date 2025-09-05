@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Play, Pause, RotateCcw, CheckCircle, X } from "lucide-react";
+import { Play, Pause, RotateCcw, CheckCircle, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -62,6 +62,17 @@ export default function PomodoroPage() {
     getModeClass,
   } = useTimer();
 
+  // Sync selected task from localStorage when arriving from Tasks page
+  useEffect(() => {
+    const saved = localStorage.getItem("selectedTask");
+    if (saved) {
+      try {
+        const task = JSON.parse(saved);
+        if (task?.title) setSelectedTask(task);
+      } catch {}
+    }
+  }, [setSelectedTask]);
+
   return (
     <div className="container mx-auto px-6 py-8">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -79,47 +90,62 @@ export default function PomodoroPage() {
             <CardTitle className="text-xl">
               {getModeTitle()} - Cycle {timer.cycle}
             </CardTitle>
-            {timer.currentTask && (
-              <div className="mt-2 p-3 bg-background/50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Working on:</p>
-                <p className="font-medium">{timer.currentTask}</p>
-                {selectedTask && (
-                  <div className="flex gap-2 mt-2 justify-center flex-wrap">
-                    <span className="text-xs bg-secondary px-2 py-1 rounded">
-                      🍅 {selectedTask.pomodoroCount || 0} cycles
-                    </span>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"  
-                        onClick={completeCurrentTask}
-                        className="text-xs h-6 text-accent hover:bg-accent/10"
-                      >
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Complete
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearCurrentTask}
-                        className="text-xs h-6 text-muted-foreground hover:bg-destructive/10"
-                      >
-                        <X className="h-3 w-3 mr-1" />
-                        Clear
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate("/tasks")}
-                        className="text-xs h-6"
-                      >
-                        Back to Tasks
-                      </Button>
-                    </div>
+            <div className="mt-2 p-3 bg-background/50 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Working on:</p>
+              <p className="font-medium">{timer.currentTask || selectedTask?.title || "No task selected"}</p>
+              {selectedTask && (
+                <div className="flex gap-2 mt-2 justify-center flex-wrap">
+                  <span className="text-xs bg-secondary px-2 py-1 rounded">
+                    🍅 {selectedTask.pomodoroCount || 0} cycles
+                  </span>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"  
+                      onClick={completeCurrentTask}
+                      className="text-xs h-6 text-accent hover:bg-accent/10"
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Complete
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearCurrentTask}
+                      className="text-xs h-6 text-muted-foreground hover:bg-destructive/10"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Clear
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!selectedTask) return;
+                        const savedTasks = localStorage.getItem("tasks");
+                        if (savedTasks) {
+                          const tasks = JSON.parse(savedTasks).filter((t: any) => t.id !== selectedTask.id);
+                          localStorage.setItem("tasks", JSON.stringify(tasks));
+                        }
+                        clearCurrentTask();
+                      }}
+                      className="text-xs h-6 text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/tasks")}
+                      className="text-xs h-6"
+                    >
+                      Back to Tasks
+                    </Button>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="text-center space-y-6">
             <div className="text-6xl font-mono font-bold">

@@ -401,6 +401,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Ensure selecting a task also updates the timer's display title
+  const selectTask = (task: any) => {
+    setSelectedTask(task);
+    setTimer(prev => ({ ...prev, currentTask: task?.title }));
+  };
+
   const updateSettings = (newSettings: TimerSettings) => {
     setSettings(newSettings);
     localStorage.setItem("timer-settings", JSON.stringify(newSettings));
@@ -449,7 +455,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     selectedTask,
     toggleTimer,
     resetTimer,
-    setSelectedTask,
+    setSelectedTask: selectTask,
     completeCurrentTask,
     clearCurrentTask,
     updateSettings,
