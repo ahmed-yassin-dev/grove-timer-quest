@@ -56,7 +56,7 @@ export default function StatisticsPage() {
     dailyFocusTime: {},
     taskBlocks: {},
   });
-  
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -81,7 +81,7 @@ export default function StatisticsPage() {
       // Load tasks and projects
       const savedTasks = localStorage.getItem("tasks");
       if (savedTasks) setTasks(JSON.parse(savedTasks));
-      
+
       const savedProjects = localStorage.getItem("projects");
       if (savedProjects) setProjects(JSON.parse(savedProjects));
     };
@@ -127,17 +127,17 @@ export default function StatisticsPage() {
     today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
     const todayString = today.toISOString().split('T')[0];
     const thisWeek = getWeekStart(new Date());
-    
+
     const completedTasks = tasks.filter(task => task.completed);
     const totalCompleted = completedTasks.length;
-    
+
     const todayCompleted = completedTasks.filter(task => {
       const taskDate = new Date(task.createdAt);
       taskDate.setMinutes(taskDate.getMinutes() - taskDate.getTimezoneOffset());
       const taskCompletedDate = taskDate.toISOString().split('T')[0];
       return taskCompletedDate === todayString;
     }).length;
-    
+
     const weekCompleted = completedTasks.filter(task => {
       const taskDate = new Date(task.createdAt);
       return taskDate >= thisWeek && taskDate <= new Date();
@@ -162,11 +162,11 @@ export default function StatisticsPage() {
     const startWeekday = firstDay.getDay();
 
     const days = [];
-    
+
     for (let i = 0; i < startWeekday; i++) {
       days.push(null);
     }
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       // Use local timezone for proper date representation
@@ -174,12 +174,12 @@ export default function StatisticsPage() {
       const dateString = date.toISOString().split('T')[0];
       const sessions = statistics.dailySessions[dateString] || 0;
       const focusTime = statistics.dailyFocusTime[dateString] || 0;
-      
+
       // Check if it's today in local timezone
       const today = new Date();
       today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
       const todayString = today.toISOString().split('T')[0];
-      
+
       days.push({
         day,
         date: dateString,
@@ -188,20 +188,20 @@ export default function StatisticsPage() {
         isToday: dateString === todayString,
       });
     }
-    
+
     return days;
   };
 
   const getProjectColor = (projectName?: string, folderName?: string) => {
     const colors = [
       'bg-primary/20 text-primary',
-      'bg-pond-blue/20 text-pond-blue', 
+      'bg-pond-blue/20 text-pond-blue',
       'bg-tree-green/20 text-tree-green',
       'bg-fish-orange/20 text-fish-orange',
       'bg-accent/20 text-accent',
       'bg-secondary/20 text-secondary-foreground'
     ];
-    
+
     const name = projectName || folderName || 'default';
     const hash = name.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
@@ -210,26 +210,26 @@ export default function StatisticsPage() {
     return colors[Math.abs(hash) % colors.length];
   };
 
+  // Only return focus blocks for statistics and chart
   const getDayBlocks = (date: string) => {
-    return statistics.taskBlocks[date] || [];
+    return (statistics.taskBlocks[date] || []).filter(block => block.type === "focus");
   };
 
   // --- START: Updated Timeline Graph for Each Day ---
   const renderDayDetail = (date: string) => {
-    const blocks = getDayBlocks(date);
+    const blocks = getDayBlocks(date); // Only focus blocks
     const uniqueTasks = Array.from(new Set(blocks.map(block => block.taskName)));
-    // const maxTaskNameLength = Math.max(...uniqueTasks.map(name => name.length), 10);
 
     return (
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
-              {new Date(date).toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </CardTitle>
             <Button variant="outline" onClick={() => setViewMode('calendar')}>
@@ -281,7 +281,7 @@ export default function StatisticsPage() {
                     />
                   ))}
 
-                  {/* Task blocks */}
+                  {/* Task blocks - focus only */}
                   {uniqueTasks.map((taskName, taskIdx) => {
                     const taskBlocks = blocks.filter((b) => b.taskName === taskName);
                     const left = (taskIdx / uniqueTasks.length) * 100;
@@ -351,7 +351,7 @@ export default function StatisticsPage() {
                     const totalTime = taskBlocks.reduce((sum, block) => sum + block.duration, 0);
                     const projectName = taskBlocks[0]?.projectName;
                     const folderName = taskBlocks[0]?.folderName;
-                    
+
                     return (
                       <div key={taskName} className={`px-3 py-1 rounded text-sm ${getProjectColor(projectName, folderName)}`}>
                         {taskName} ({formatTime(totalTime)})
