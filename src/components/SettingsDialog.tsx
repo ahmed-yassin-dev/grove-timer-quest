@@ -64,6 +64,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     const data = {
       timerSettings,
       tasks: JSON.parse(localStorage.getItem("tasks") || "[]"),
+      projects: JSON.parse(localStorage.getItem("projects") || "[]"),
+      folders: JSON.parse(localStorage.getItem("folders") || "[]"),
       statistics: JSON.parse(localStorage.getItem("statistics") || "{}"),
       gamification: JSON.parse(localStorage.getItem("gamification") || "{}"),
       exportDate: new Date().toISOString(),
@@ -102,6 +104,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         }
         if (data.tasks) {
           localStorage.setItem("tasks", JSON.stringify(data.tasks));
+        }
+        if (data.projects) {
+          localStorage.setItem("projects", JSON.stringify(data.projects));
+        }
+        if (data.folders) {
+          localStorage.setItem("folders", JSON.stringify(data.folders));
         }
         if (data.statistics) {
           localStorage.setItem("statistics", JSON.stringify(data.statistics));
