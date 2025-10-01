@@ -98,35 +98,43 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       try {
         const data = JSON.parse(e.target?.result as string);
         
+        // Initialize with defaults to ensure proper structure
         if (data.timerSettings) {
           localStorage.setItem("timer-settings", JSON.stringify(data.timerSettings));
           setTimerSettings(data.timerSettings);
         }
-        if (data.tasks) {
-          localStorage.setItem("tasks", JSON.stringify(data.tasks));
-        }
-        if (data.projects) {
-          localStorage.setItem("projects", JSON.stringify(data.projects));
-        }
-        if (data.folders) {
-          localStorage.setItem("folders", JSON.stringify(data.folders));
-        }
-        if (data.statistics) {
-          localStorage.setItem("statistics", JSON.stringify(data.statistics));
-        }
-        if (data.gamification) {
-          localStorage.setItem("gamification", JSON.stringify(data.gamification));
-        }
+        
+        // Ensure tasks array exists
+        localStorage.setItem("tasks", JSON.stringify(data.tasks || []));
+        
+        // Ensure projects array exists
+        localStorage.setItem("projects", JSON.stringify(data.projects || []));
+        
+        // Ensure folders array exists
+        localStorage.setItem("folders", JSON.stringify(data.folders || []));
+        
+        // Ensure statistics has proper structure
+        const stats = data.statistics || {};
+        const validStats = {
+          totalSessions: stats.totalSessions || 0,
+          totalFocusTime: stats.totalFocusTime || 0,
+          totalBreakTime: stats.totalBreakTime || 0,
+          dailySessions: stats.dailySessions || {},
+          monthlySessions: stats.monthlySessions || {},
+          dailyFocusTime: stats.dailyFocusTime || {},
+          taskBlocks: stats.taskBlocks || {}
+        };
+        localStorage.setItem("statistics", JSON.stringify(validStats));
+        
+        // Ensure gamification exists
+        const gamif = data.gamification || { fish: 0, leaves: 0 };
+        localStorage.setItem("gamification", JSON.stringify(gamif));
 
         toast({
-          title: "Data imported",
-          description: "Your FocusFlow data has been restored. Refreshing...",
+          title: "Data imported successfully",
+          description: "Your FocusFlow data has been restored. Please refresh the page.",
         });
-        
-        // Reload page to reinitialize all components with imported data
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        onOpenChange(false);
       } catch (error) {
         toast({
           title: "Import failed",
