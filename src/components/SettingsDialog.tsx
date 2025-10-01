@@ -120,9 +120,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
         toast({
           title: "Data imported",
-          description: "Your FocusFlow data has been restored.",
+          description: "Your FocusFlow data has been restored. Refreshing...",
         });
-        onOpenChange(false);
+        
+        // Reload page to reinitialize all components with imported data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } catch (error) {
         toast({
           title: "Import failed",
